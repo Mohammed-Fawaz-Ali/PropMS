@@ -95,7 +95,30 @@ The platform is fully automated — rent bills generate monthly, overdue payment
 
 ---
 
-## 📁 Project Structure
+## � Screenshots
+
+### Owner Dashboard
+![Owner Dashboard](./Images/AI/Screenshot%202026-04-13%20123037.png)
+
+### AI Pricing & Market Insights
+![AI Pricing](./Images/AI/Screenshot%202026-04-13%20123104.png)
+
+### Property and Tenant Management
+| Add Property | Add Tenant |
+|---|---|
+| ![Add Property](./Images/Adding%20property/image1.png) | ![Add Tenant](./Images/Adding%20Tenant/image1.png) |
+| ![Add Property](./Images/Adding%20property/image2.png) | ![Add Tenant](./Images/Adding%20Tenant/image2.png) |
+
+### Tenant Portal
+| Tenant Login | Maintenance |
+|---|---|
+| ![Tenant Login](./Images/Tenant%20Login/image1.png) | ![Maintenance](./Images/Tenant%20Login/Maintanance/image1.png) |
+
+> More screenshots are included in the `Images/` folder for tenant workflows, payments, maintenance, and AI features.
+
+---
+
+## �📁 Project Structure
 
 ```
 propms/
