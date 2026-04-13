@@ -1,0 +1,362 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  owner
+  tenant
+  vendor
+  admin
+}
+
+enum PropertyType {
+  residential
+  commercial
+  apartment
+  pg
+  hostel
+}
+
+enum UnitStatus {
+  vacant
+  occupied
+  maintenance
+}
+
+enum Furnishing {
+  unfurnished
+  semi
+  fully
+}
+
+enum TenancyStatus {
+  active
+  ended
+  notice_period
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  partial
+  overdue
+  failed
+}
+
+enum PaymentType {
+  rent
+  deposit
+  penalty
+  utility
+  other
+}
+
+enum PaymentMethod {
+  upi
+  card
+  netbanking
+  cash
+  bank_transfer
+}
+
+enum TicketCategory {
+  plumbing
+  electrical
+  carpentry
+  appliance
+  cleaning
+  other
+}
+
+enum TicketPriority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum TicketStatus {
+  open
+  assigned
+  in_progress
+  resolved
+  closed
+}
+
+enum InspectionType {
+  move_in
+  move_out
+  periodic
+}
+
+enum ExpenseCategory {
+  maintenance
+  repairs
+  amenities
+  tax
+  insurance
+  utility
+  renovation
+  other
+}
+
+model User {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  personalEmail String?
+  phone         String?
+  password      String
+  role          Role     @default(tenant)
+  avatarUrl     String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  ownedProperties    Property[]
+  tenancies          Tenancy[]        @relation("TenantTenancies")
+  managedTenancies   Tenancy[]        @relation("OwnerTenancies")
+  raisedTickets      MaintenanceTicket[] @relation("TenantTickets")
+  assignedTickets    MaintenanceTicket[] @relation("VendorTickets")
+  ownedTickets       MaintenanceTicket[] @relation("OwnerTickets")
+  sentMessages       Message[]
+  notifications      Notification[]
+  expenses           Expense[]
+  inspections        Inspection[]
+
+  // AI Profile fields
+  employmentType    String?   // "salaried", "self_employed", "student", "retired"
+  monthlyIncome     Decimal?
+  employerName      String?
+  previousAddress   String?
+  referenceContact  String?
+}
+
+model Property {
+  id           String       @id @default(uuid())
+  ownerId      String
+  owner        User         @relation(fields: [ownerId], references: [id])
+  name         String
+  address      String
+  city         String?
+  state        String?
+  pincode      String?
+  propertyType PropertyType @default(residential)
+  totalUnits   Int          @default(0)
+  // Dimensions (optional)
+  plotAreaSqft   Decimal?
+  builtUpAreaSqft Decimal?
+  lengthFt       Decimal?
+  widthFt        Decimal?
+  floors         Int?
+  amenities    String[]
+  coverImageUrl String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  units    Unit[]
+  expenses Expense[]
+  maintenanceInsights MaintenanceInsight[]
+  amenityItems AmenityItem[]
+}
+
+enum AmenityBilling {
+  monthly
+  one_time
+}
+
+model AmenityItem {
+  id          String         @id @default(uuid())
+  propertyId  String
+  property    Property       @relation(fields: [propertyId], references: [id])
+  unitId      String?
+  unit        Unit?          @relation(fields: [unitId], references: [id])
+  ownerId     String
+  owner       User           @relation(fields: [ownerId], references: [id])
+  name        String
+  price       Decimal        @default(0)
+  billing     AmenityBilling @default(monthly)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Unit {
+  id            String     @id @default(uuid())
+  propertyId    String
+  property      Property   @relation(fields: [propertyId], references: [id])
+  unitNumber    String
+  floor         Int?
+  areaSqft      Decimal?
+  bedrooms      Int        @default(1)
+  bathrooms     Int        @default(1)
+  rentAmount    Decimal
+  depositAmount Decimal
+  status        UnitStatus @default(vacant)
+  furnishing    Furnishing @default(unfurnished)
+  amenities     String[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  tenancies   Tenancy[]
+  tickets     MaintenanceTicket[]
+  inspections Inspection[]
+}
+
+model Tenancy {
+  id                String        @id @default(uuid())
+  tenantId          String
+  tenant            User          @relation("TenantTenancies", fields: [tenantId], references: [id])
+  unitId            String
+  unit              Unit          @relation(fields: [unitId], references: [id])
+  ownerId           String
+  owner             User          @relation("OwnerTenancies", fields: [ownerId], references: [id])
+  leaseStart        DateTime
+  leaseEnd          DateTime?
+  monthlyRent       Decimal
+  depositPaid       Decimal       @default(0)
+  depositReturned   Decimal       @default(0)
+  rentDueDay        Int           @default(1)
+  noticePeriodDays  Int           @default(30)
+  status            TenancyStatus @default(active)
+  leaseDocUrl       String?
+  isLeaseSigned     Boolean       @default(false)
+  leaseNoticeSent   Boolean       @default(false)
+  joinedAt          DateTime      @default(now())
+  moveInAt          DateTime?
+  moveOutAt         DateTime?
+  notes             String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  payments    Payment[]
+  messages    Message[]
+  inspections Inspection[]
+}
+
+model Payment {
+  id                String        @id @default(uuid())
+  tenancyId         String
+  tenancy           Tenancy       @relation(fields: [tenancyId], references: [id])
+  tenantId          String
+  paymentType       PaymentType   @default(rent)
+  amount            Decimal
+  dueDate           DateTime?
+  paidDate          DateTime?
+  status            PaymentStatus @default(pending)
+  paymentMethod     PaymentMethod?
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  receiptNumber     String?       @unique
+  forMonth          DateTime?
+  lateFee           Decimal       @default(0)
+  notes             String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+model MaintenanceTicket {
+  id             String         @id @default(uuid())
+  unitId         String
+  unit           Unit           @relation(fields: [unitId], references: [id])
+  tenantId       String
+  tenant         User           @relation("TenantTickets", fields: [tenantId], references: [id])
+  ownerId        String
+  owner          User           @relation("OwnerTickets", fields: [ownerId], references: [id])
+  vendorId       String?
+  vendor         User?          @relation("VendorTickets", fields: [vendorId], references: [id])
+  title          String
+  description    String?
+  category       TicketCategory @default(other)
+  priority       TicketPriority @default(medium)
+  status         TicketStatus   @default(open)
+  photoUrls      String[]
+  resolutionNote String?
+  cost           Decimal?
+  scheduledAt    DateTime?
+  resolvedAt     DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model Expense {
+  id          String          @id @default(uuid())
+  propertyId  String
+  property    Property        @relation(fields: [propertyId], references: [id])
+  unitId      String?
+  ownerId     String
+  owner       User            @relation(fields: [ownerId], references: [id])
+  category    ExpenseCategory @default(other)
+  amount      Decimal
+  date        DateTime
+  description String?
+  receiptUrl  String?
+  createdAt   DateTime        @default(now())
+}
+
+model Inspection {
+  id            String         @id @default(uuid())
+  tenancyId     String
+  tenancy       Tenancy        @relation(fields: [tenancyId], references: [id])
+  unitId        String
+  unit          Unit           @relation(fields: [unitId], references: [id])
+  type          InspectionType
+  conductedById String
+  conductedBy   User           @relation(fields: [conductedById], references: [id])
+  checklist     Json
+  tenantSigned  Boolean        @default(false)
+  ownerSigned   Boolean        @default(false)
+  reportUrl     String?
+  conductedAt   DateTime?
+  createdAt     DateTime       @default(now())
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  tenancyId   String
+  tenancy     Tenancy  @relation(fields: [tenancyId], references: [id])
+  senderId    String
+  sender      User     @relation(fields: [senderId], references: [id])
+  body        String
+  attachments String[]
+  isRead      Boolean  @default(false)
+  sentAt      DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  ownerId     String
+  relatedType String
+  relatedId   String
+  docType     String
+  url         String
+  name        String
+  createdAt   DateTime @default(now())
+}
+
+model MaintenanceInsight {
+  id           String   @id @default(uuid())
+  propertyId   String
+  property     Property @relation(fields: [propertyId], references: [id])
+  ownerId      String
+  generatedAt  DateTime @default(now())
+  insights     Json     // array of insight objects from Gemini
+  summary      String   // one-line summary
+  highRiskCount Int     @default(0)
+}
