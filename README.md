@@ -29,6 +29,8 @@ PropMS is a production-grade property management system built for the Indian ren
 
 The platform is fully automated — rent bills generate monthly, overdue payments are flagged daily, notifications go out via email and WhatsApp, and an AI engine powered by Google Gemini provides rent pricing suggestions, tenant risk scores, and predictive maintenance alerts.
 
+
+
 ---
 
 ## ✨ Features
@@ -42,16 +44,13 @@ The platform is fully automated — rent bills generate monthly, overdue payment
 | Payment tracking | Track pending, paid, overdue, and partial payments |
 | Manual payment marking | Mark cash payments as paid with method and date |
 | Razorpay integration | Online UPI, card, and netbanking payments |
-| Maintenance ticketing | Full ticket lifecycle with photo uploads |
+| Maintenance ticketing | Full ticket lifecycle |
 | Expense auto-logging | Ticket resolution cost auto-logs as property expense |
 | Lease management | Digital leases with e-signature and PDF generation |
-| Move-in/out inspections | Photo-backed checklists with digital sign-off |
 | Financial reports | P&L per property, expense breakdown, CSV export |
 | AI rent pricing | Gemini-powered rent range suggestion per unit |
-| AI tenant risk score | Automated screening with payment history analysis |
 | AI predictive maintenance | Weekly pattern analysis with prevention recommendations |
 | Dashboard analytics | Revenue charts, occupancy rates, KPI stat cards |
-| In-app notifications | Real-time alerts for payments, tickets, and messages |
 
 ### For Tenants
 | Feature | Description |
@@ -61,7 +60,6 @@ The platform is fully automated — rent bills generate monthly, overdue payment
 | Payment history | View all receipts and past transactions |
 | Maintenance requests | Raise tickets with photos and track resolution status |
 | Lease access | Download signed lease agreement anytime |
-| In-app messaging | Direct messaging with property owner |
 | Notifications | Email and WhatsApp alerts for bills and updates |
 
 ---
@@ -85,7 +83,6 @@ The platform is fully automated — rent bills generate monthly, overdue payment
 - **JWT + bcrypt** — authentication and password hashing
 - **Multer + Cloudinary** — file and image uploads
 - **Nodemailer** — transactional email
-- **Twilio** — SMS and WhatsApp notifications
 - **node-cron** — scheduled background jobs
 - **Razorpay** — payment gateway
 
@@ -139,109 +136,6 @@ propms/
 └── README.md
 ```
 
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js v18+
-- A [Supabase](https://supabase.com) account (free tier works)
-- A [Cloudinary](https://cloudinary.com) account (free tier works)
-- A [Razorpay](https://razorpay.com) test account
-- A [Google AI Studio](https://aistudio.google.com/app/apikey) API key (free)
-- Gmail account or SMTP credentials for email
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/yourusername/propms.git
-cd propms
-```
-
-### 2. Backend setup
-
-```bash
-cd backend
-npm install
-```
-
-Create `backend/.env`:
-
-```env
-DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DB_NAME
-JWT_SECRET=your_super_secret_jwt_key
-JWT_EXPIRES_IN=7d
-PORT=5000
-CLIENT_URL=http://localhost:5173
-
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-
-RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxx
-RAZORPAY_KEY_SECRET=your_razorpay_secret
-
-TWILIO_ACCOUNT_SID=your_twilio_sid
-TWILIO_AUTH_TOKEN=your_twilio_token
-TWILIO_PHONE_NUMBER=+1xxxxxxxxxx
-
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
-
-GEMINI_API_KEY=your_gemini_api_key
-```
-
-Run database migrations:
-
-```bash
-npx prisma migrate dev --name init
-npx prisma generate
-```
-
-Start the backend:
-
-```bash
-npm run dev
-```
-
-Backend runs on `http://localhost:5000`
-
-### 3. Frontend setup
-
-```bash
-cd ../frontend
-npm install
-```
-
-Create `frontend/.env`:
-
-```env
-VITE_API_URL=http://localhost:5000/api
-VITE_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxx
-```
-
-Start the frontend:
-
-```bash
-npm run dev
-```
-
-Frontend runs on `http://localhost:5173`
-
-### 4. Test the setup
-
-1. Open `http://localhost:5173`
-2. Register as an Owner
-3. Add a property and a unit
-4. Add a tenant — they will receive login credentials by email
-5. Log in as the tenant in an incognito window to test the tenant portal
-
-> For Razorpay test payments, use card number `4111 1111 1111 1111`, CVV `123`, any future expiry, OTP `1234`
-
----
 
 ## 🔑 Environment Variables Reference
 
@@ -251,7 +145,6 @@ Frontend runs on `http://localhost:5173`
 | `JWT_SECRET` | Any random long string (use a password generator) |
 | `CLOUDINARY_*` | Cloudinary Dashboard → API Keys |
 | `RAZORPAY_KEY_ID/SECRET` | Razorpay Dashboard → Settings → API Keys |
-| `TWILIO_*` | Twilio Console → Account Info |
 | `SMTP_USER/PASS` | Gmail → Google Account → App Passwords |
 | `GEMINI_API_KEY` | [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) |
 
@@ -289,9 +182,6 @@ PropMS uses **Google Gemini 1.5 Pro** for three AI-powered features:
 ### Rent Pricing Engine
 Analyzes unit details (location, size, furnishing, amenities) alongside comparable units in your database and recommends a min/recommended/max rent range with market position and actionable tips.
 
-### Tenant Risk Scoring
-Scores tenant applications from 1–100 based on income-to-rent ratio, payment history, employment stability, and profile completeness. Returns red flags, green flags, and owner recommendations.
-
 ### Predictive Maintenance
 Analyzes ticket history patterns weekly to predict the top 5 issues likely in the next 60 days. Includes seasonal alerts, prevention costs vs. repair costs, and property health score.
 
@@ -303,8 +193,6 @@ Analyzes ticket history patterns weekly to predict the top 5 issues likely in th
 |---|---|---|
 | Daily at 9 AM | Rent reminder | Sends reminders for payments due in 7, 3, and 1 day |
 | Daily at 9 AM | Overdue detection | Flags payments past due date as overdue |
-| 1st of month at 8 AM | Monthly statement | Sends income summary to all owners |
-| Every Monday at 8 AM | AI maintenance scan | Auto-generates maintenance predictions for all properties |
 | Daily | Lease expiry check | Alerts owners of leases expiring in 30 days |
 
 ---
@@ -337,22 +225,6 @@ Key tables:
 - `notifications` — in-app alert feed
 - `documents` — all uploaded files linked to any entity
 - `maintenance_insights` — stored AI prediction results
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature-name`
-3. Commit your changes: `git commit -m "feat: add your feature"`
-4. Push to the branch: `git push origin feature/your-feature-name`
-5. Open a Pull Request to the `develop` branch
-
-Please follow the commit convention:
-- `feat:` new feature
-- `fix:` bug fix
-- `chore:` config/setup changes
-- `refactor:` code restructure without behavior change
 
 ---
 
