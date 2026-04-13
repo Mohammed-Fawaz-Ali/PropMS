@@ -98,10 +98,10 @@ The platform is fully automated — rent bills generate monthly, overdue payment
 ## � Screenshots
 
 ### Owner Dashboard
-![Owner Dashboard](./Images/AI/Screenshot%202026-04-13%20123037.png)
+![Owner Dashboard](./Images/image3.png)
 
 ### AI Pricing & Market Insights
-![AI Pricing](./Images/AI/Screenshot%202026-04-13%20123104.png)
+![AI Pricing](./Images/AI/image2.png)
 
 ### Property and Tenant Management
 | Add Property | Add Tenant |
