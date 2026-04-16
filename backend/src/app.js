@@ -6,10 +6,16 @@ const prisma = require('./prisma');
 
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://prop-ms.vercel.app'
+];
+
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({ origin: process.env.CLIENT_URL }));
+app.use(cors({ origin: allowedOrigins,
+  credentials: true, }));
 app.use(helmet());
 
 // Rate Limiter
